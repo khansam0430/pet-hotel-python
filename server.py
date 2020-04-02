@@ -1,5 +1,6 @@
 from flask import Flask
-from flask import request
+import time
+from flask import request, jsonify
 app = Flask(__name__)
 import requests
 import psycopg2
@@ -40,16 +41,21 @@ def pet_get():
         postgreSQL_select_Query = "select * from pets"
         cursor.execute(postgreSQL_select_Query)
         records = cursor.fetchall() 
+        results = []
         
         print("Print each row and it's columns values")
         for row in records:
-            print("Id = ", row[0], )
-            print("name = ", row[1], )
-            print("pet = ", row[2],"\n" )
-
+            obj = {
+                'id' : row[0],
+                'name' : row[1],
+                'pet' : row[2]
+            }
+            results.append(obj)
+        response = jsonify(results)
+        # response.status_code = 200
         cursor.close()
         connection.close()
-        return ('success get')  
+        return response 
             # print("PostgreSQL connection is closed")
 
 def pet_post():
@@ -67,7 +73,9 @@ def pet_post():
         connection.close()
         return ('success post')
         
-def pet_delete():
+def pet_delete(pet_id):
+    # pet_id = 2
+    delete_sql = "DELETE FROM pets WHERE id = %s"
     connection = psycopg2.connect(user="kylegreene",
                                         password="",
                                         host="127.0.0.1",
@@ -76,16 +84,19 @@ def pet_delete():
        
     cursor = connection.cursor()
     
-    cursor.execute("DELETE FROM pets WHERE id = 3")
+    cursor.execute(delete_sql, (pet_id,))
     connection.commit()
     cursor.close()
     connection.close()
-    return ('success delete')
+    return ('success delete pet')
 
     # delete_sql='DELETE FROM table_1 WHERE id = %s;'  	
     # cur.execute(delete_sql, (value_1,))
 
-def update_pet():
+def update_pet(date, pet_id):
+    # date = '4/22/2020'
+    # pet_id = 1
+    update_sql = "UPDATE pets SET checked_in = %s WHERE id = %s"
     connection = psycopg2.connect(user="kylegreene",
                                         password="",
                                         host="127.0.0.1",
@@ -94,7 +105,7 @@ def update_pet():
        
     cursor = connection.cursor()
     
-    cursor.execute("UPDATE pets SET checked_in = '4/2/2020' WHERE id = 2")
+    cursor.execute(update_sql, (date, pet_id,))
     connection.commit()
     cursor.close()
     connection.close()
@@ -111,17 +122,20 @@ def owners_get():
         postgreSQL_select_Query = "select * from owners"
         cursor.execute(postgreSQL_select_Query)
         records = cursor.fetchall() 
-        
+        results = []
         print("Print each row and it's columns values")
         for row in records:
-            print("Id = ", row[0], )
-            print("name = ", row[1], )
-            print("number of pets = ", row[2],"\n" )
-
+            obj = {
+                "id" : row[0],
+                "name" : row[1], 
+                "number of pets": row[2]
+            }
+            results.append(obj)
+        response = jsonify(results)
         cursor.close()
         connection.close()
-        return ('success get')  
-            # print("PostgreSQL connection is closed")
+        return response 
+        # print("PostgreSQL connection is closed")
 
 def owners_post():
         connection = psycopg2.connect(user="kylegreene",
@@ -138,7 +152,9 @@ def owners_post():
         connection.close()
         return ('success owners post')
 
-def owners_delete():
+def owners_delete(owner_id):
+    # owners_id = 1
+    delete_sql = "DELETE FROM owners WHERE id = %s"
     connection = psycopg2.connect(user="kylegreene",
                                         password="",
                                         host="127.0.0.1",
@@ -147,13 +163,16 @@ def owners_delete():
        
     cursor = connection.cursor()
     
-    cursor.execute("DELETE FROM owners WHERE id = 2")
+    cursor.execute(delete_sql, (owner_id,))
     connection.commit()
     cursor.close()
     connection.close()
     return ('success owners delete')
 
-def update_owner():
+def update_owner(num_pets, owner_id):
+    # num_pets = '4'
+    # owner_id = 1
+    update_sql = "UPDATE owners SET num_pets = %s WHERE id = %s"
     connection = psycopg2.connect(user="kylegreene",
                                     password="",
                                     host="127.0.0.1",
@@ -162,7 +181,7 @@ def update_owner():
     
     cursor = connection.cursor()
     
-    cursor.execute("UPDATE owners SET num_pets=3 WHERE id = 1")
+    cursor.execute(update_sql, (num_pets, owner_id,))
     connection.commit()
     cursor.close()
     connection.close()
