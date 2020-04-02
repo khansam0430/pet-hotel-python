@@ -13,8 +13,10 @@ def pets():
         return pet_get()
     elif request.method == 'POST':
         return pet_post()
-    elif request.method== 'DELETE':
+    elif request.method == 'DELETE':
         return pet_delete()
+    elif request.method == 'PUT':
+        return update_pet()
 
 @app.route('/owners', methods=['GET','POST', 'DELETE', 'PUT'])
 def owners():
@@ -24,12 +26,11 @@ def owners():
         return owners_post()
     elif request.method == 'DELETE':
         return owners_delete()
-    
-
-
+    elif request.method == 'PUT':
+        return update_owner()
+  
 
 def pet_get():
-
         connection = psycopg2.connect(user="kylegreene",
                                         password="",
                                         host="127.0.0.1",
@@ -84,8 +85,23 @@ def pet_delete():
     # delete_sql='DELETE FROM table_1 WHERE id = %s;'  	
     # cur.execute(delete_sql, (value_1,))
 
-def owners_get():
+def update_pet():
+    connection = psycopg2.connect(user="kylegreene",
+                                        password="",
+                                        host="127.0.0.1",
+                                        port="5432",
+                                        database="pet-hotel")
+       
+    cursor = connection.cursor()
+    
+    cursor.execute("UPDATE pets SET checked_in = '4/2/2020' WHERE id = 2")
+    connection.commit()
+    cursor.close()
+    connection.close()
+    return('succesfully updated pet')
 
+
+def owners_get():
         connection = psycopg2.connect(user="kylegreene",
                                         password="",
                                         host="127.0.0.1",
@@ -136,3 +152,18 @@ def owners_delete():
     cursor.close()
     connection.close()
     return ('success owners delete')
+
+def update_owner():
+    connection = psycopg2.connect(user="kylegreene",
+                                    password="",
+                                    host="127.0.0.1",
+                                    port="5432",
+                                    database="pet-hotel")
+    
+    cursor = connection.cursor()
+    
+    cursor.execute("UPDATE owners SET num_pets=3 WHERE id = 1")
+    connection.commit()
+    cursor.close()
+    connection.close()
+    return('succesfully updated owner')
