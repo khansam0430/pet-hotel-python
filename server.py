@@ -94,7 +94,7 @@ def pet_delete():
                                     port="5432",
                                     database="pet-hotel")
     cursor = connection.cursor()
-    deleteData = request.get_json
+    deleteData = request.get_json()
     pet_id = [
         deleteData ['deleteId']
     ]
