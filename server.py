@@ -8,7 +8,7 @@ import psycopg2
 
 
 
-@app.route('/pets', methods=['GET', 'POST', 'DELETE', 'PUT'])
+@app.route('/api/pets', methods=['GET', 'POST', 'DELETE', 'PUT'])
 def pets():
     if request.method == 'GET':
         return pet_get()
@@ -19,7 +19,7 @@ def pets():
     elif request.method == 'PUT':
         return update_pet()
 
-@app.route('/owners', methods=['GET','POST', 'DELETE', 'PUT'])
+@app.route('/api/owners', methods=['GET','POST', 'DELETE', 'PUT'])
 def owners():
     if request.method == 'GET':
         return owners_get()
@@ -38,25 +38,30 @@ def pet_get():
                                         port="5432",
                                         database="pet-hotel")
         cursor = connection.cursor()
-        postgreSQL_select_Query = "select * from pets"
+        postgreSQL_select_Query = "SELECT * FROM pets join owners on owners.id = pets.owner_id;"
         cursor.execute(postgreSQL_select_Query)
         records = cursor.fetchall() 
         results = []
         
-        print("Print each row and it's columns values")
+        print("Print each row and it's columns values", records)
         for row in records:
             obj = {
                 'id' : row[0],
-                'name' : row[1],
-                'pet' : row[2]
+                'pet' : row[1],
+                'breed' : row[2],
+                'color' : row[3],
+                'checked_in' : row[4],
+                'owner_id' : row[5],
+                'owner' : row[7],
             }
             results.append(obj)
         response = jsonify(results)
         # response.status_code = 200
         cursor.close()
         connection.close()
-        return response 
-            # print("PostgreSQL connection is closed")
+        return response
+        # return ({'pets': response}) 
+        # print("PostgreSQL connection is closed")
 
 def pet_post():
         connection = psycopg2.connect(user="kylegreene",
@@ -66,8 +71,17 @@ def pet_post():
                                         database="pet-hotel")
        
         cursor = connection.cursor()
-       
-        cursor.execute("INSERT INTO pets (owner, pet, breed, color, checked_in) VALUES ('Duncan', 'Fluffy', 'corgi', 'brown', '4/2/2020')")
+        # get the json coming from our post on the client side
+        newPetData = request.get_json()
+        newPet = [
+            newPetData['pet'],
+            newPetData['breed'],
+            newPetData['color'],
+            newPetData['owner_id'],
+        ]
+        print('pet to post', newPet)
+        insert_sql = "INSERT INTO pets (pet, breed, color, checked_in, owner_id) VALUES (%s, %s, %s, 'no', %s)"
+        cursor.execute(insert_sql, (newPet[0], newPet[1], newPet[2], newPet[3]))
         connection.commit()
         cursor.close()
         connection.close()
@@ -128,7 +142,7 @@ def owners_get():
             obj = {
                 "id" : row[0],
                 "name" : row[1], 
-                "number of pets": row[2]
+                "number_of_pets": row[2]
             }
             results.append(obj)
         response = jsonify(results)
