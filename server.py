@@ -87,18 +87,20 @@ def pet_post():
         connection.close()
         return ('success post')
         
-def pet_delete(pet_id):
-    # pet_id = 2
-    delete_sql = "DELETE FROM pets WHERE id = %s"
+def pet_delete():
     connection = psycopg2.connect(user="kylegreene",
-                                        password="",
-                                        host="127.0.0.1",
-                                        port="5432",
-                                        database="pet-hotel")
-       
+                                    password="",
+                                    host="127.0.0.1",
+                                    port="5432",
+                                    database="pet-hotel")
     cursor = connection.cursor()
-    
-    cursor.execute(delete_sql, (pet_id,))
+    deleteData = request.get_json
+    pet_id = [
+        deleteData ['deleteId']
+    ]
+    print('deleteData', deleteData)
+    delete_sql = "DELETE FROM pets WHERE id = %s"
+    cursor.execute(delete_sql, (deleteData,))
     connection.commit()
     cursor.close()
     connection.close()
@@ -159,12 +161,29 @@ def owners_post():
                                         database="pet-hotel")
        
         cursor = connection.cursor()
-       
-        cursor.execute("INSERT INTO owners (name) VALUES ('Duncan')")
+        # newOwnerData=request.get_json()
+        # print('data coming from owner post', newOwnerData)
+        # newOwner = str(newOwnerData)
+        # print('newOwner:', newOwner)
+        # insert_sql = "INSERT INTO owners (name) VALUES (%s)"
+        # cursor.execute(insert_sql, newOwner)
+        # connection.commit()
+        # cursor.close()
+        # connection.close()
+        # return ('success owners post')
+        newOwnerData = request.get_json()
+        print('newOwnerData:', newOwnerData)
+        newOwner = [
+            newOwnerData['ownerName'],
+            newOwnerData['num_pets'],
+        ]
+        print('Owner to post', newOwner)
+        insert_sql = "INSERT INTO owners (name, num_pets) VALUES (%s, %s)"
+        cursor.execute(insert_sql, (newOwner[0], newOwner[1]))
         connection.commit()
         cursor.close()
         connection.close()
-        return ('success owners post')
+        return ('success posting Owner')
 
 def owners_delete(owner_id):
     # owners_id = 1
